@@ -2,6 +2,9 @@ import React, { useState } from "react";
 
 import useFormValidation from "./useFormValidation";
 import validateLogin from "./validateLogin";
+import firebase from "../../firebase";
+
+import { Link } from "react-router-dom";
 
 const INITIAL_STATE = {
   name: "",
@@ -17,8 +20,23 @@ function Login(props) {
     values,
     errors,
     isSubmitting
-  } = useFormValidation(INITIAL_STATE, validateLogin);
+  } = useFormValidation(INITIAL_STATE, validateLogin, authenticateUser);
+  const { name, email, password } = values;
   const [login, setLogin] = useState(true);
+  const [serverErrors, setServerErrors] = useState(null);
+
+  async function authenticateUser() {
+    try {
+      const response = login
+        ? await firebase.login(email, password)
+        : await firebase.register(name, email, password);
+      console.log({ response });
+      props.history.push("/");
+    } catch (err) {
+      console.log("Authentication Error: ", err);
+      setServerErrors(err.message);
+    }
+  }
 
   const handleToggle = () => {
     setLogin(prevLogin => !prevLogin);
@@ -32,9 +50,9 @@ function Login(props) {
           <input
             type="text"
             name="name"
-            value={values.name}
+            value={name}
             placeholder="Your Name"
-            className={errors.email && "error-input"}
+            className={errors.name && "error-input"}
             autoComplete="off"
             onChange={handleChange}
           />
@@ -42,10 +60,10 @@ function Login(props) {
         <input
           type="email"
           name="email"
-          value={values.email}
+          value={email}
           placeholder="Your Email"
           autoComplete="off"
-          className={errors.password && "error-input"}
+          className={errors.email && "error-input"}
           onChange={handleChange}
           onBlur={handleBlur}
         />
@@ -53,12 +71,14 @@ function Login(props) {
         <input
           type="password"
           name="password"
-          value={values.password}
+          value={password}
+          className={errors.password && "error-input"}
           placeholder="Choose a Secure Password"
           onChange={handleChange}
           onBlur={handleBlur}
         />
         {errors.password && <p className="error-text">{errors.password}</p>}
+        {serverErrors && <p className="error-text">{serverErrors}</p>}
         <div className="flex mt3">
           <button
             type="submit"
@@ -77,6 +97,9 @@ function Login(props) {
           </button>
         </div>
       </form>
+      <div className="forgot-password">
+        <Link to="/forgot">Forgot password?</Link>
+      </div>
     </div>
   );
 }
