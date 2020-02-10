@@ -11,9 +11,10 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 # Deploying
 
-npm run build
-firebase init hosting
+Run commands:
 
+- npm run build
+- firebase init hosting
 - use directory build
 - use as a SPA
 - do not override index.html
