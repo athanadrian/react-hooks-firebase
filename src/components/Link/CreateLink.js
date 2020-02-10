@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import useFormValidation from "../Auth/useFormValidation";
 import validateCreateLink from "../Auth/validateCreateLink";
 import { FirebaseContext } from "../../firebase";
@@ -10,21 +10,32 @@ const INITIAL_STATE = {
 
 function CreateLink(props) {
   const { user, firebase } = useContext(FirebaseContext);
-
   const handleCreateLink = () => {
     if (!user) {
       props.history.push("/login");
+    } else {
+      const newLink = {
+        url,
+        description,
+        postedBy: {
+          id: user.uid,
+          name: user.displayName
+        },
+        votesCount: 0,
+        votes: [],
+        comments: [],
+        created: Date.now()
+      };
+      firebase.db.collection("links").add(newLink);
+      props.history.push("/");
     }
   };
-
   const { handleChange, handleSubmit, values, errors } = useFormValidation(
     INITIAL_STATE,
     validateCreateLink,
     handleCreateLink
   );
-
   const { description, url } = values;
-  const [serverErrors, setServerErrors] = useState(null);
 
   return (
     <form className="flex flex-column mt3" onSubmit={handleSubmit}>
@@ -48,7 +59,6 @@ function CreateLink(props) {
         value={url}
       />
       {errors.url && <p className="error-text">{errors.url}</p>}
-      {serverErrors && <p className="error-text">{serverErrors}</p>}
       <button type="submit" className="button">
         Submit
       </button>
