@@ -7,6 +7,7 @@ function LinkDetail(props) {
   const linkId = props.match.params.linkId;
   const { user, firebase } = useContext(FirebaseContext);
   const [link, setLink] = useState(null);
+  const [emptyCommentError, setEmptyCommentEror] = useState(true);
   const [commentText, setCommentText] = useState("");
   const linkRef = firebase.db.collection("links").doc(linkId);
 
@@ -18,6 +19,13 @@ function LinkDetail(props) {
     linkRef.get().then(doc => {
       setLink({ ...doc.data(), id: doc.id });
     });
+  }
+
+  function handleComment(e) {
+    if (e.target.value) {
+      setCommentText(e.target.value);
+      setEmptyCommentEror(false);
+    }
   }
 
   function handleAddComment() {
@@ -35,6 +43,11 @@ function LinkDetail(props) {
             created: Date.now(),
             text: commentText
           };
+          if (commentText === "") {
+            setEmptyCommentEror(`You must provide a comment!`);
+            return;
+          }
+
           const updatedComments = [...previousCommments, comment];
           linkRef.update({ comments: updatedComments });
           setLink(prevState => ({
@@ -56,10 +69,15 @@ function LinkDetail(props) {
         rows="6"
         columns="60"
         value={commentText}
-        onChange={e => setCommentText(e.target.value)}
+        onChange={handleComment}
       />
+      {emptyCommentError && <p className="error-text">{emptyCommentError}</p>}
       <div>
-        <button className="button" onClick={handleAddComment}>
+        <button
+          className="button"
+          onClick={handleAddComment}
+          // disabled={emptyCommentError}
+        >
           add comment
         </button>
       </div>
