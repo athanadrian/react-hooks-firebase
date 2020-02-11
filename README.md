@@ -18,6 +18,7 @@ Run commands:
 - use directory build
 - use as a SPA
 - do not override index.html
+- firebase deploy
 
 #### Deployed at Firebase
 
